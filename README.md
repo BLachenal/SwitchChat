@@ -24,4 +24,9 @@ If a creator uses entirely different usernames across platforms (for example, Yo
 1. Click the **Change Channel** button located directly inside the custom Twitch Chat Bridge header on the webpage.
 2. Type the exact target Twitch username (e.g., `b0aty`) into the popup prompt.
 3. Click **OK**. The extension commits the name to local storage and dynamically updates the iframe layout instantly.
-4. **To Reset:** If you want to clear the custom override and revert back to hands-free auto-detection, click **Change Channel** again, leave the text input completely blank, and click **OK**.
+
+To do:
+    Make top name of the chat link to twitch channel.
+    Create a way to close the extension to reopen YouTube Chat -Maybe make also a minimize option?
+    See if there's a way to integrate 7TV 
+

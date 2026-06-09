@@ -1,15 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "Twitch Chat on YouTube",
-  "version": "1.0",
+  "name": "TwitchTubeChat",
+  "version": "1.2",
   "description": "Brings live Twitch chat overlays to YouTube stream pages.",
   "permissions": [
     "activeTab",
     "storage"
   ],
+  "action": {
+    "default_popup": "popup.html"
+  },
   "content_scripts": [
     {
-      "matches": ["*://*.youtube.com/watch*"],
+      "matches": ["*://*.youtube.com/*"],
       "js": ["content.js"],
       "css": ["content.css"],
       "run_at": "document_end"

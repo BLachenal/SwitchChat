@@ -5,9 +5,23 @@
   position: relative !important;
 }
 
-#twitch-chat-container {
-  display: flex;
-  flex-direction: column;
+/* THE CLOAKING DEVICE: Kill native YouTube chat panels when the bridge is engaged */
+#chat.twitch-bridge-active ytd-live-chat-frame,
+#chat.twitch-bridge-active #chat-frame,
+#chat.twitch-bridge-active ytd-live-chat-panel-renderer,
+#panels-full-bleed-container.twitch-bridge-active ytd-live-chat-frame,
+#panels-full-bleed-container.twitch-bridge-active #chat-frame,
+#panels-full-bleed-container.twitch-bridge-active ytd-live-chat-panel-renderer {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Core extension container layout canvas */
+.twitch-chat-bridge-container {
+  display: flex !important;
+  flex-direction: column !important;
   position: absolute !important;
   top: 0 !important;
   left: 0 !important;
@@ -17,10 +31,8 @@
   box-sizing: border-box;
   z-index: 99999 !important;
   overflow: hidden;
-  border-left: 1px solid #272727;
 }
 
-/* Flex layout keeps text left, button right */
 .twitch-chat-header {
   display: flex !important;
   justify-content: space-between !important;
@@ -40,9 +52,8 @@
   margin-left: 6px;
 }
 
-/* Styled inline interaction button */
 .header-edit-btn {
-  background-color: #9146ff !important; /* Twitch Purple */
+  background-color: #9146ff !important;
   color: #ffffff !important;
   border: none !important;
   border-radius: 4px !important;
@@ -62,4 +73,15 @@
   flex-grow: 1;
   width: 100%;
   height: calc(100% - 45px);
+}
+
+.twitch-channel-link {
+  color: #a171ff !important;
+  text-decoration: none !important;
+  font-weight: bold !important;
+}
+
+.twitch-channel-link:hover {
+  text-decoration: underline !important;
+  color: #b18aff !important; /* Slightly brighter purple on hover */
 }
