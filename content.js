@@ -22,15 +22,14 @@ function getYouTubeChannelName() {
       const name = el.textContent
         .trim()
         .toLowerCase()
-        .replace(/\s+/g, '') // Strip all spaces
-        .replace('@', '');   // Strip out handle annotations
+        .replace(/\s+/g, '')
+        .replace('@', '');
       if (name) return name;
     }
   }
   return null;
 }
 
-// Extract the core video string component directly out of the active URL string
 function getVideoIdFromUrl() {
   const params = new URLSearchParams(window.location.search);
   return params.get('v');
@@ -42,15 +41,14 @@ function syncTwitchBridgeState() {
 
   const targetVideoId = getVideoIdFromUrl();
   
-  // ROUTING GATE: Clear state and turn off classes if navigating out to homepage feeds
   if (!targetVideoId) {
     document.querySelectorAll('.twitch-chat-bridge-container').forEach(el => el.remove());
     document.querySelectorAll('.twitch-bridge-active').forEach(el => el.classList.remove('twitch-bridge-active'));
+    document.querySelectorAll('.twitch-bridge-minimized').forEach(el => el.classList.remove('twitch-bridge-minimized'));
     currentVideoId = '';
     return;
   }
 
-  // Loop through all possible layout nodes and isolate the one drawing real screen pixels
   const candidates = document.querySelectorAll('#panels-full-bleed-container, #chat');
   let activeParent = null;
   
@@ -63,18 +61,16 @@ function syncTwitchBridgeState() {
 
   if (!activeParent) return;
 
-  // SCOPED LOOKUP: Only check for our container inside the active visual parent element
   let existingContainer = activeParent.querySelector('.twitch-chat-bridge-container');
 
-  // If the user changed videos, clear old elements and classes everywhere to prevent tracking bleed
   if (currentVideoId !== targetVideoId) {
     document.querySelectorAll('.twitch-chat-bridge-container').forEach(el => el.remove());
     document.querySelectorAll('.twitch-bridge-active').forEach(el => el.classList.remove('twitch-bridge-active'));
+    document.querySelectorAll('.twitch-bridge-minimized').forEach(el => el.classList.remove('twitch-bridge-minimized'));
     existingContainer = null;
   }
   currentVideoId = targetVideoId;
 
-  // INJECTION: Drop curtain canvas and engage cloaking device class instantly inside the visible scope
   if (!existingContainer) {
     isProcessingState = true;
     
@@ -82,12 +78,16 @@ function syncTwitchBridgeState() {
     document.querySelectorAll('.twitch-bridge-active').forEach(el => {
       if (el !== activeParent) el.classList.remove('twitch-bridge-active');
     });
+    document.querySelectorAll('.twitch-bridge-minimized').forEach(el => {
+      if (el !== activeParent) el.classList.remove('twitch-bridge-minimized');
+    });
 
     const placeholder = document.createElement('div');
     placeholder.className = 'twitch-chat-bridge-container';
     placeholder.dataset.videoId = targetVideoId;
     placeholder.dataset.channel = '';
     placeholder.dataset.ytChannel = '';
+    placeholder.dataset.minimized = 'false'; 
     
     placeholder.innerHTML = `
       <div class="twitch-chat-header">
@@ -104,8 +104,15 @@ function syncTwitchBridgeState() {
     isProcessingState = false;
   }
 
-  if (!activeParent.classList.contains('twitch-bridge-active')) {
-    activeParent.classList.add('twitch-bridge-active');
+  // PERSISTENCE REDRAW: Enforce correct layout state tracking rules across interval ticks
+  if (existingContainer.dataset.minimized === 'true') {
+    activeParent.classList.remove('twitch-bridge-active');
+    activeParent.classList.add('twitch-bridge-minimized');
+  } else {
+    activeParent.classList.remove('twitch-bridge-minimized');
+    if (!activeParent.classList.contains('twitch-bridge-active')) {
+      activeParent.classList.add('twitch-bridge-active');
+    }
   }
 
   if (existingContainer.dataset.ytChannel !== '') {
@@ -136,15 +143,18 @@ function syncTwitchBridgeState() {
     existingContainer.dataset.ytChannel = ytChannel;
 
     const parentDomain = window.location.hostname;
+    const wasMinimizedBeforeSync = existingContainer.dataset.minimized === 'true';
 
-    // Modified the template line below to inject a clean hyperlinked anchor tag
     existingContainer.innerHTML = `
       <div class="twitch-chat-header">
         <div class="header-title-block">
           TwitchTube Chat: <a href="https://www.twitch.tv/${targetChannel}" target="_blank" class="twitch-channel-link">#${targetChannel}</a>
           ${hasOverride ? '<span class="override-tag">(Override Saved)</span>' : ''}
         </div>
-        <button id="twitch-bridge-change-btn" class="header-edit-btn">Change Channel</button>
+        <div class="header-btn-group">
+          <button id="twitch-bridge-change-btn" class="header-edit-btn">Change Channel</button>
+          <button id="twitch-bridge-toggle-btn" class="header-toggle-btn">Minimize</button>
+        </div>
       </div>
       <iframe 
         id="twitch-chat-embed"
@@ -173,6 +183,34 @@ function syncTwitchBridgeState() {
               syncTwitchBridgeState();
             });
           });
+        }
+      });
+    }
+
+    const toggleBtn = existingContainer.querySelector('#twitch-bridge-toggle-btn');
+    if (toggleBtn) {
+      if (wasMinimizedBeforeSync) {
+        existingContainer.classList.add('minimized');
+        activeParent.classList.remove('twitch-bridge-active');
+        activeParent.classList.add('twitch-bridge-minimized');
+        toggleBtn.textContent = '🔌 Restore Twitch Chat';
+      }
+
+      toggleBtn.addEventListener('click', () => {
+        const isCurrentlyMinimized = existingContainer.dataset.minimized === 'true';
+        
+        if (isCurrentlyMinimized) {
+          existingContainer.dataset.minimized = 'false';
+          existingContainer.classList.remove('minimized');
+          activeParent.classList.remove('twitch-bridge-minimized');
+          activeParent.classList.add('twitch-bridge-active');
+          toggleBtn.textContent = 'Minimize';
+        } else {
+          existingContainer.dataset.minimized = 'true';
+          existingContainer.classList.add('minimized');
+          activeParent.classList.remove('twitch-bridge-active');
+          activeParent.classList.add('twitch-bridge-minimized');
+          toggleBtn.textContent = '🔌 Restore Twitch Chat';
         }
       });
     }

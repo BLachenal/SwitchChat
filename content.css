@@ -5,7 +5,7 @@
   position: relative !important;
 }
 
-/* THE CLOAKING DEVICE: Kill native YouTube chat panels when the bridge is engaged */
+/* THE CLOAKING DEVICE: Kill native YouTube chat panels when the bridge is fully active */
 #chat.twitch-bridge-active ytd-live-chat-frame,
 #chat.twitch-bridge-active #chat-frame,
 #chat.twitch-bridge-active ytd-live-chat-panel-renderer,
@@ -16,6 +16,20 @@
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+/* ============================================================================
+   ⚔️ THE LAYOUT ADJUSTER: Shifting the ENTIRE native YT chat down uniformly
+   ============================================================================ */
+#chat.twitch-bridge-minimized > :not(.twitch-chat-bridge-container),
+#panels-full-bleed-container.twitch-bridge-minimized > :not(.twitch-chat-bridge-container) {
+  position: absolute !important;
+  top: 40px !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: calc(100% - 40px) !important;
+  box-sizing: border-box !important;
 }
 
 /* Core extension container layout canvas */
@@ -46,10 +60,26 @@
   border-bottom: 1px solid #272727;
 }
 
+.header-btn-group {
+  display: flex !important;
+  gap: 6px !important;
+}
+
 .override-tag {
   font-size: 10px;
   color: #aaaaaa;
   margin-left: 6px;
+}
+
+.twitch-channel-link {
+  color: #a171ff !important;
+  text-decoration: none !important;
+  font-weight: bold !important;
+}
+
+.twitch-channel-link:hover {
+  text-decoration: underline !important;
+  color: #b18aff !important;
 }
 
 .header-edit-btn {
@@ -68,6 +98,23 @@
   background-color: #772ce8 !important;
 }
 
+.header-toggle-btn {
+  background-color: #2f2f2f !important;
+  color: #f1f1f1 !important;
+  border: 1px solid #3f3f3f !important;
+  border-radius: 4px !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  transition: background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.header-toggle-btn:hover {
+  background-color: #3f3f3f !important;
+  border-color: #5f5f5f !important;
+}
+
 #twitch-chat-embed {
   border: none;
   flex-grow: 1;
@@ -75,13 +122,54 @@
   height: calc(100% - 45px);
 }
 
-.twitch-channel-link {
-  color: #a171ff !important;
-  text-decoration: none !important;
-  font-weight: bold !important;
+/* ============================================================================
+   🗗 SLIM INLINE TOP-BANNER STATE (MINIMIZED)
+   ============================================================================ */
+.twitch-chat-bridge-container.minimized {
+  height: 40px !important;
+  width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: auto !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-bottom: 1px solid #272727 !important;
+  background-color: #1f1f1f !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
-.twitch-channel-link:hover {
-  text-decoration: underline !important;
-  color: #b18aff !important; /* Slightly brighter purple on hover */
+/* Strip down or alter internal elements when locked in the minimized row configuration */
+.twitch-chat-bridge-container.minimized .header-title-block,
+.twitch-chat-bridge-container.minimized #twitch-bridge-change-btn,
+.twitch-chat-bridge-container.minimized #twitch-chat-embed {
+  display: none !important;
+}
+
+.twitch-chat-bridge-container.minimized .twitch-chat-header {
+  padding: 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Transform the toggle button into a sleek, centralized row clicker */
+.twitch-chat-bridge-container.minimized .header-toggle-btn {
+  background-color: #9146ff !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 5px 16px !important;
+  font-size: 11px !important;
+}
+
+.twitch-chat-bridge-container.minimized .header-toggle-btn:hover {
+  background-color: #772ce8 !important;
 }
