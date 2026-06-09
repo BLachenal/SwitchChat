@@ -1,0 +1,60 @@
+/* popup.css */
+body {
+  width: 240px;
+  padding: 16px;
+  font-family: 'Roboto', Arial, sans-serif;
+  background-color: #0f0f0f;
+  color: #f1f1f1;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #a171ff; /* Twitch Purple accent */
+  font-weight: 500;
+}
+
+.description {
+  font-size: 11px;
+  color: #aaaaaa;
+  line-height: 1.4;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: #1f1f1f;
+  border: 1px solid #3f3f3f;
+  border-radius: 6px;
+  color: #ffffff;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #9146ff;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background-color: #9146ff; /* Twitch Purple */
+  border: none;
+  border-radius: 6px;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+button:hover {
+  background-color: #772ce8;
+}
