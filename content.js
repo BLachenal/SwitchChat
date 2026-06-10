@@ -91,7 +91,7 @@ function syncTwitchBridgeState() {
     
     placeholder.innerHTML = `
       <div class="twitch-chat-header">
-        <div class="header-title-block">Twitch Chat Bridge: Connecting...</div>
+        <div class="header-title-block">Switch Chat: Connecting...</div>
       </div>
       <div style="display:flex; justify-content:center; align-items:center; flex-grow:1; color:#aaa; font-family:sans-serif; font-size:13px; background:#0f0f0f;">
         Synchronizing active stream panel real estate...
@@ -148,7 +148,7 @@ function syncTwitchBridgeState() {
     existingContainer.innerHTML = `
       <div class="twitch-chat-header">
         <div class="header-title-block">
-          TwitchTube Chat: <a href="https://www.twitch.tv/${targetChannel}" target="_blank" class="twitch-channel-link">#${targetChannel}</a>
+          Switch Chat: <a href="https://www.twitch.tv/${targetChannel}" target="_blank" class="twitch-channel-link">#${targetChannel}</a>
           ${hasOverride ? '<span class="override-tag">(Override Saved)</span>' : ''}
         </div>
         <div class="header-btn-group">
