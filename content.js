@@ -89,14 +89,27 @@ function syncTwitchBridgeState() {
     placeholder.dataset.ytChannel = '';
     placeholder.dataset.minimized = 'false'; 
     
-    placeholder.innerHTML = `
-      <div class="twitch-chat-header">
-        <div class="header-title-block">Switch Chat: Connecting...</div>
-      </div>
-      <div style="display:flex; justify-content:center; align-items:center; flex-grow:1; color:#aaa; font-family:sans-serif; font-size:13px; background:#0f0f0f;">
-        Synchronizing active stream panel real estate...
-      </div>
-    `;
+    // CHANGE 1: Safe DOM alternative to initial placeholder innerHTML
+    const initialHeader = document.createElement('div');
+    initialHeader.className = 'twitch-chat-header';
+    
+    const initialTitle = document.createElement('div');
+    initialTitle.className = 'header-title-block';
+    initialTitle.textContent = 'Switch Chat: Connecting...';
+    initialHeader.appendChild(initialTitle);
+    
+    const statusDiv = document.createElement('div');
+    statusDiv.style.display = 'flex';
+    statusDiv.style.justifyContent = 'center';
+    statusDiv.style.alignItems = 'center';
+    statusDiv.style.flexGrow = '1';
+    statusDiv.style.color = '#aaa';
+    statusDiv.style.fontFamily = 'sans-serif';
+    statusDiv.style.fontSize = '13px';
+    statusDiv.style.background = '#0f0f0f';
+    statusDiv.textContent = 'Synchronizing active stream panel real estate...';
+    
+    placeholder.append(initialHeader, statusDiv);
     
     activeParent.appendChild(placeholder);
     activeParent.classList.add('twitch-bridge-active'); 
@@ -145,26 +158,55 @@ function syncTwitchBridgeState() {
     const parentDomain = window.location.hostname;
     const wasMinimizedBeforeSync = existingContainer.dataset.minimized === 'true';
 
-    existingContainer.innerHTML = `
-      <div class="twitch-chat-header">
-        <div class="header-title-block">
-          Switch Chat: <a href="https://www.twitch.tv/${targetChannel}" target="_blank" class="twitch-channel-link">#${targetChannel}</a>
-          ${hasOverride ? '<span class="override-tag">(Override Saved)</span>' : ''}
-        </div>
-        <div class="header-btn-group">
-          <button id="twitch-bridge-change-btn" class="header-edit-btn">Change Channel</button>
-          <button id="twitch-bridge-toggle-btn" class="header-toggle-btn">Minimize</button>
-        </div>
-      </div>
-      <iframe 
-        id="twitch-chat-embed"
-        src="https://www.twitch.tv/embed/${targetChannel}/chat?parent=${parentDomain}&darkpopout"
-        height="100%"
-        width="100%">
-      </iframe>
-    `;
+    // CHANGE 2: Safe DOM alternative to the dynamic embed block innerHTML
+    existingContainer.replaceChildren();
 
-    const changeBtn = existingContainer.querySelector('#twitch-bridge-change-btn');
+    const header = document.createElement('div');
+    header.className = 'twitch-chat-header';
+
+    const titleBlock = document.createElement('div');
+    titleBlock.className = 'header-title-block';
+    titleBlock.textContent = 'Switch Chat: ';
+
+    const link = document.createElement('a');
+    link.href = `https://www.twitch.tv/${encodeURIComponent(targetChannel)}`;
+    link.target = '_blank';
+    link.className = 'twitch-channel-link';
+    link.textContent = `#${targetChannel}`;
+    titleBlock.appendChild(link);
+
+    if (hasOverride) {
+      const space = document.createTextNode(' ');
+      const overrideSpan = document.createElement('span');
+      overrideSpan.className = 'override-tag';
+      overrideSpan.textContent = '(Override Saved)';
+      titleBlock.append(space, overrideSpan);
+    }
+
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'header-btn-group';
+
+    const changeBtn = document.createElement('button');
+    changeBtn.id = 'twitch-bridge-change-btn';
+    changeBtn.className = 'header-edit-btn';
+    changeBtn.textContent = 'Change Channel';
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.id = 'twitch-bridge-toggle-btn';
+    toggleBtn.className = 'header-toggle-btn';
+    toggleBtn.textContent = 'Minimize';
+
+    btnGroup.append(changeBtn, toggleBtn);
+    header.append(titleBlock, btnGroup);
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'twitch-chat-embed';
+    iframe.src = `https://www.twitch.tv/embed/${encodeURIComponent(targetChannel)}/chat?parent=${encodeURIComponent(parentDomain)}&darkpopout`;
+    iframe.setAttribute('height', '100%');
+    iframe.setAttribute('width', '100%');
+
+    existingContainer.append(header, iframe);
+
     if (changeBtn) {
       changeBtn.addEventListener('click', () => {
         const input = prompt(`Enter Twitch channel name for YouTube channel @${ytChannel} (Leave blank to reset):`, targetChannel);
@@ -187,7 +229,6 @@ function syncTwitchBridgeState() {
       });
     }
 
-    const toggleBtn = existingContainer.querySelector('#twitch-bridge-toggle-btn');
     if (toggleBtn) {
       if (wasMinimizedBeforeSync) {
         existingContainer.classList.add('minimized');
