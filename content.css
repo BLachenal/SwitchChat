@@ -173,3 +173,119 @@
 .twitch-chat-bridge-container.minimized .header-toggle-btn:hover {
   background-color: #772ce8 !important;
 }
+
+/* ==========================================================================
+   SWITCHCHAT UNIFIED SIDEBAR SYSTEM (NAVBAR DEDICATED BADGE UI)
+   ========================================================================== */
+
+/* --- 1. EXPANDED STATE (Twitch Chat Full Bleed) --- */
+
+/* Hide internal native chat components so they don't bleed into our canvas layouts */
+body.switchchat-expanded ytd-live-chat-frame,
+body.switchchat-expanded #chatframe,
+body.switchchat-expanded ytd-live-chat-panel-renderer,
+body.switchchat-expanded ytd-live-chat-renderer {
+    display: none !important;
+}
+
+/* FIX STANDARD VIEW EXPANDED: Prevent the #chat parent container from collapsing to 0px height */
+body.switchchat-expanded #chat {
+    display: block !important;
+    height: 600px !important; /* Restores standard page space allocations for default mode */
+    position: relative !important;
+}
+
+/* Force the parent sidebar container to stretch all the way to the bottom of the window in theater mode */
+body.switchchat-expanded ytd-watch-flexy[theater] #panels-full-bleed-container {
+    height: calc(100vh - var(--ytd-masthead-height-accounting-for-hidden, 56px)) !important;
+    display: block !important;
+}
+
+/* Force our custom Twitch container to match 100% full height of its active layout parent */
+body.switchchat-expanded .twitch-chat-bridge-container {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 99999 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body.switchchat-expanded .twitch-chat-bridge-container iframe {
+    flex-grow: 1 !important;
+    height: 100% !important;
+    width: 100% !important;
+    border: none !important;
+}
+
+/* --- 2. MINIMIZED STATE (Native Chat Restored & Navbar Button Tracking) --- */
+
+/* Completely hide the extension sidebar canvas when minimized to let native elements handle layout cleanly */
+body.switchchat-minimized .twitch-chat-bridge-container {
+    display: none !important;
+}
+
+/* Ensure all native YouTube chat structures render completely unbothered natively */
+body.switchchat-minimized ytd-live-chat-renderer,
+body.switchchat-minimized #chat-container,
+body.switchchat-minimized #chat {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* BRUTE-FORCE THEATER FIX: Force the native chat up from the bottom slot into the right sidebar during theater mode */
+body.switchchat-minimized ytd-watch-flexy[theater] #chat {
+    position: fixed !important;
+    top: var(--ytd-masthead-height-accounting-for-hidden, 56px) !important;
+    right: 0 !important;
+    width: var(--ytd-watch-flexy-sidebar-width, 380px) !important;
+    height: calc(100vh - var(--ytd-masthead-height-accounting-for-hidden, 56px)) !important;
+    margin: 0 !important;
+    display: block !important;
+    z-index: 10000 !important; /* Positions it securely on top of the layout backdrop grid channel */
+    background-color: #0f0f0f !important;
+    box-sizing: border-box !important;
+}
+
+body.switchchat-minimized ytd-watch-flexy[theater] #chat iframe,
+body.switchchat-minimized ytd-watch-flexy[theater] #chat #chatframe {
+    height: 100% !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+/* --- 3. GLOBAL TOP NAVBAR RESTORE CAPSULE BUTTON --- */
+
+/* Hide the global navbar pill layout by default */
+#switchchat-nav-restore-btn {
+    display: none !important;
+}
+
+/* Display and style the custom capsule beautifully to the left of the Create button when minimized */
+body.switchchat-minimized #switchchat-nav-restore-btn {
+    display: inline-block !important;
+    background-color: #a970ff !important; /* SwitchChat Signature Premium Purple */
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 18px !important; /* Clean pill capsule style that matches YouTube native UI rules */
+    padding: 6px 16px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    font-family: Roboto, Arial, sans-serif !important;
+    cursor: pointer !important;
+    margin-right: 12px !important; /* Clean horizontal spacing separator from native tools */
+    align-self: center !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+    transition: background-color 0.15s ease !important;
+}
+
+/* Hover illumination highlight tracking */
+body.switchchat-minimized #switchchat-nav-restore-btn:hover {
+    background-color: #bfa0ff !important;
+}

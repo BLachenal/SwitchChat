@@ -42,22 +42,61 @@ function syncTwitchBridgeState() {
   const targetVideoId = getVideoIdFromUrl();
   
   if (!targetVideoId) {
-    document.querySelectorAll('.twitch-chat-bridge-container').forEach(el => el.remove());
+    document.body.classList.remove('switchchat-expanded', 'switchchat-minimized');
+    document.querySelectorAll('.twitch-chat-bridge-container, #switchchat-nav-restore-btn').forEach(el => el.remove());
     document.querySelectorAll('.twitch-bridge-active').forEach(el => el.classList.remove('twitch-bridge-active'));
     document.querySelectorAll('.twitch-bridge-minimized').forEach(el => el.classList.remove('twitch-bridge-minimized'));
     currentVideoId = '';
     return;
   }
 
-  const candidates = document.querySelectorAll('#panels-full-bleed-container, #chat');
-  let activeParent = null;
-  
-  for (const el of candidates) {
-    if (el.offsetWidth > 0 || el.offsetHeight > 0) {
-      activeParent = el;
-      break;
+  /* ==========================================================================
+     🛡️ REFINED LIVE STREAM DOM GUARD
+     ========================================================================== */
+  // Only execute if an active live chat rendering node or iframe explicitly exists in the DOM tree.
+  // Structural layout skeletons like #chat-container are ignored here.
+  const hasLiveChat = document.querySelector('ytd-live-chat-renderer, #chatframe, ytd-live-chat-frame');
+  if (!hasLiveChat) {
+    document.body.classList.remove('switchchat-expanded', 'switchchat-minimized');
+    document.querySelectorAll('.twitch-chat-bridge-container, #switchchat-nav-restore-btn').forEach(el => el.remove());
+    document.querySelectorAll('.twitch-bridge-active').forEach(el => el.classList.remove('twitch-bridge-active'));
+    document.querySelectorAll('.twitch-bridge-minimized').forEach(el => el.classList.remove('twitch-bridge-minimized'));
+    currentVideoId = '';
+    return;
+  }
+
+  // Inject standalone navbar button directly into YouTube's top toolbar structure
+  let navRestoreBtn = document.querySelector('#switchchat-nav-restore-btn');
+  if (!navRestoreBtn) {
+    const mastheadEnd = document.querySelector('#masthead #end');
+    if (mastheadEnd) {
+      navRestoreBtn = document.createElement('button');
+      navRestoreBtn.id = 'switchchat-nav-restore-btn';
+      navRestoreBtn.textContent = '🔌 Restore Twitch Chat';
+      mastheadEnd.insertBefore(navRestoreBtn, mastheadEnd.firstChild);
+      
+      navRestoreBtn.addEventListener('click', () => {
+        const container = document.querySelector('.twitch-chat-bridge-container');
+        if (container) {
+          container.dataset.minimized = 'false';
+          container.classList.remove('minimized');
+          const parent = container.parentElement;
+          if (parent) {
+            parent.classList.remove('twitch-bridge-minimized');
+            parent.classList.add('twitch-bridge-active');
+          }
+          syncTwitchBridgeState();
+        }
+      });
     }
   }
+
+  const watchFlexy = document.querySelector('ytd-watch-flexy');
+  const isTheater = watchFlexy && watchFlexy.hasAttribute('theater');
+  
+  const activeParent = isTheater 
+    ? document.querySelector('#panels-full-bleed-container') 
+    : document.querySelector('#chat');
 
   if (!activeParent) return;
 
@@ -89,7 +128,6 @@ function syncTwitchBridgeState() {
     placeholder.dataset.ytChannel = '';
     placeholder.dataset.minimized = 'false'; 
     
-    // CHANGE 1: Safe DOM alternative to initial placeholder innerHTML
     const initialHeader = document.createElement('div');
     initialHeader.className = 'twitch-chat-header';
     
@@ -117,17 +155,32 @@ function syncTwitchBridgeState() {
     isProcessingState = false;
   }
 
-  // PERSISTENCE REDRAW: Enforce correct layout state tracking rules across interval ticks
-  if (existingContainer.dataset.minimized === 'true') {
-    activeParent.classList.remove('twitch-bridge-active');
-    activeParent.classList.add('twitch-bridge-minimized');
-  } else {
-    activeParent.classList.remove('twitch-bridge-minimized');
-    if (!activeParent.classList.contains('twitch-bridge-active')) {
-      activeParent.classList.add('twitch-bridge-active');
-    }
+  // PERSISTENCE REDRAW: Maintain layout constraints across runtime ticks
+  if (watchFlexy && isTheater && !watchFlexy.hasAttribute('fixed-panels')) {
+      watchFlexy.setAttribute('fixed-panels', '');
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
+  }
+  
+  if (watchFlexy && !isTheater && watchFlexy.hasAttribute('fixed-panels')) {
+      watchFlexy.removeAttribute('fixed-panels');
   }
 
+  if (existingContainer.dataset.minimized === 'true') {
+      activeParent.classList.remove('twitch-bridge-active');
+      activeParent.classList.add('twitch-bridge-minimized');
+      
+      document.body.classList.remove('switchchat-expanded');
+      document.body.classList.add('switchchat-minimized');
+  } else {
+      activeParent.classList.remove('twitch-bridge-minimized');
+      if (!activeParent.classList.contains('twitch-bridge-active')) {
+          activeParent.classList.add('twitch-bridge-active');
+      }
+      
+      document.body.classList.add('switchchat-expanded');
+      document.body.classList.remove('switchchat-minimized');
+  }
+    
   if (existingContainer.dataset.ytChannel !== '') {
     const freshCheck = getYouTubeChannelName();
     if (freshCheck && existingContainer.dataset.ytChannel !== freshCheck) {
@@ -158,7 +211,6 @@ function syncTwitchBridgeState() {
     const parentDomain = window.location.hostname;
     const wasMinimizedBeforeSync = existingContainer.dataset.minimized === 'true';
 
-    // CHANGE 2: Safe DOM alternative to the dynamic embed block innerHTML
     existingContainer.replaceChildren();
 
     const header = document.createElement('div');
@@ -234,7 +286,6 @@ function syncTwitchBridgeState() {
         existingContainer.classList.add('minimized');
         activeParent.classList.remove('twitch-bridge-active');
         activeParent.classList.add('twitch-bridge-minimized');
-        toggleBtn.textContent = '🔌 Restore Twitch Chat';
       }
 
       toggleBtn.addEventListener('click', () => {
