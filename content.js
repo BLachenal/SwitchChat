@@ -302,7 +302,7 @@ function syncTwitchBridgeState() {
           existingContainer.classList.add('minimized');
           activeParent.classList.remove('twitch-bridge-active');
           activeParent.classList.add('twitch-bridge-minimized');
-          toggleBtn.textContent = '🔌 Restore Twitch Chat';
+          toggleBtn.textContent = 'Minimize';
         }
       });
     }
