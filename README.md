@@ -101,7 +101,11 @@ Clone or download this repository onto your machine:
 
 Bash
 git clone [https://github.com/BLachenal/SwitchChat.git]
-Open Google Chrome and navigate to the extensions management dashboard at: chrome://extensions/
+Open Google Chrome: 
+https://chromewebstore.google.com/detail/igindjjloacilehhbpanfgipkhhdfjjb?utm_source=item-share-cb
+
+Mozilla:
+https://addons.mozilla.org/en-US/firefox/addon/switchchat/
 
 Toggle the Developer mode switch in the top right corner to ON.
 
