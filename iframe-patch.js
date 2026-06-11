@@ -1,40 +1,42 @@
 // iframe-patch.js
-console.log("[SwitchChat Iframe Patch] Script successfully loaded inside frame layout window origin:", window.location.href);
+console.log("[SwitchChat Iframe Patch] Dual-Engine Emote Script Loaded inside origin:", window.location.href);
 
 const urlSegments = window.location.pathname.split('/');
 const channelName = urlSegments[2]?.toLowerCase();
-console.log(`[SwitchChat Iframe Patch] Target Twitch channel determined as: "${channelName}"`);
+console.log(`[SwitchChat Iframe Patch] Evaluating platform boundaries for: "${channelName}"`);
 
-let bttvEmotes = {};
+let unifiedEmoteMap = {};
+// Inside iframe-patch.js
 
-async function loadBTTVEmotes() {
+async function loadUnifiedEmotes() {
   if (!channelName) return;
 
-  chrome.runtime.sendMessage({ type: 'FETCH_BTTV_EMOTES', channel: channelName }, (response) => {
-    if (!response || !response.success) {
-      console.warn(`[SwitchChat Iframe Patch] BetterTTV initialization halted: ${response.error || 'Unknown Error'}`);
-      return;
+  // Check user preference state before compiling asset arrays
+  chrome.storage.local.get(['emotesEnabled'], (result) => {
+    if (result.emotesEnabled === false) {
+      console.log("[SwitchChat Iframe Patch] Third-party emotes are disabled in settings.");
+      return; // Terminate script loop early
     }
 
-    const data = response.data;
-    const channelEmotes = data.channelEmotes || [];
-    const sharedEmotes = data.sharedEmotes || [];
-    const globalEmotes = data.globalEmotes || []; // Extract the new global array
+    console.log(`[SwitchChat Iframe Patch] Settings verified active. Sending compilation bundle request...`);
     
-    // Assemble uniform lookup table including global entries
-    const allEmotes = [...channelEmotes, ...sharedEmotes, ...globalEmotes];
-    
-    allEmotes.forEach(emote => {
-      bttvEmotes[emote.code] = emote.id;
+    chrome.runtime.sendMessage({ type: 'FETCH_ALL_EMOTES', channel: channelName }, (response) => {
+      if (!response || !response.success) {
+        console.warn(`[SwitchChat Iframe Patch] Network compilation failed or timed out: ${response?.error}`);
+        return;
+      }
+
+      response.emotes.forEach(emote => {
+        unifiedEmoteMap[emote.code] = { id: emote.id, engine: emote.engine };
+      });
+      
+      console.log("[SwitchChat Iframe Patch] Memory maps constructed. Total searchable keys:", Object.keys(unifiedEmoteMap).length);
+      observeChatStream();
     });
-    
-    console.log("[SwitchChat Iframe Patch] Client memory database built. Total searchable keywords:", Object.keys(bttvEmotes).length);
-    observeChatStream();
   });
 }
 
 function observeChatStream() {
-  // Broad layout matching fallback to secure a link to the chat box container
   const chatContainer = document.querySelector(
     '.chat-scrollable-area__content, ' +
     '.chat-scrollable-area__message-container, ' +
@@ -48,15 +50,12 @@ function observeChatStream() {
     return;
   }
 
-  console.log("[SwitchChat Iframe Patch] Target container successfully linked! Processing backlog and setting up observer...");
-
-  // Scan any messages already on screen at startup
+  console.log("[SwitchChat Iframe Patch] Container connection linked! Processing backlog layout text arrays...");
   parseAndRenderEmotes(chatContainer);
 
   const observer = new MutationObserver((mutations) => {
     mutations.forEach(mutation => {
       mutation.addedNodes.forEach(node => {
-        // Process the entire newly added chat row container at once
         if (node.nodeType === Node.ELEMENT_NODE) {
           parseAndRenderEmotes(node);
         }
@@ -68,31 +67,26 @@ function observeChatStream() {
 }
 
 function parseAndRenderEmotes(rootElement) {
-  // Defensive guard: don't re-process our own injected image elements
-  if (rootElement.classList && rootElement.classList.contains('bttv-processed-emote')) return;
+  if (rootElement.classList && rootElement.classList.contains('switchchat-rendered')) return;
 
-  // Use a TreeWalker to find every single raw text node hidden inside this element, regardless of class names
   const walker = document.createTreeWalker(rootElement, NodeFilter.SHOW_TEXT, null, false);
   const nodesToReplace = [];
   let textNode;
 
   while (textNode = walker.nextNode()) {
-    // Ignore empty spacing text nodes or anything inside scripts/styles
     if (!textNode.nodeValue.trim()) continue;
     if (textNode.parentElement && (textNode.parentElement.tagName === 'SCRIPT' || textNode.parentElement.tagName === 'STYLE')) {
       continue;
     }
 
-    // Split text by white space to evaluate individual word matches
     const words = textNode.nodeValue.split(/\s+/);
-    const hasEmote = words.some(word => bttvEmotes[word]);
+    const hasEmote = words.some(word => unifiedEmoteMap[word]);
     
     if (hasEmote) {
       nodesToReplace.push(textNode);
     }
   }
 
-  // Swap out the matching text node strings for clean DOM fragments containing images
   nodesToReplace.forEach(targetTextNode => {
     const parent = targetTextNode.parentElement;
     if (!parent) return;
@@ -102,14 +96,22 @@ function parseAndRenderEmotes(rootElement) {
     const fragment = document.createDocumentFragment();
 
     words.forEach((word, index) => {
-      if (bttvEmotes[word]) {
-        console.log(`[SwitchChat Iframe Patch] Converting keyword match: "${word}"`);
+      if (unifiedEmoteMap[word]) {
+        console.log(`[SwitchChat Iframe Patch] Conversion processing match: "${word}"`);
+        const emoteMetadata = unifiedEmoteMap[word];
         
         const img = document.createElement('img');
-        img.src = `https://cdn.betterttv.net/emote/${bttvEmotes[word]}/1x`;
+        
+        // Dynamically path CDN target assets based on engine flags
+        if (emoteMetadata.engine === 'bttv') {
+          img.src = `https://cdn.betterttv.net/emote/${emoteMetadata.id}/1x`;
+        } else if (emoteMetadata.engine === '7tv') {
+          img.src = `https://cdn.7tv.app/emote/${emoteMetadata.id}/1x.webp`;
+        }
+        
         img.alt = word;
         img.title = word; 
-        img.className = 'bttv-processed-emote';
+        img.className = 'switchchat-rendered';
         img.style.verticalAlign = 'middle';
         img.style.margin = '0 3px';
         img.style.display = 'inline-block';
@@ -119,15 +121,13 @@ function parseAndRenderEmotes(rootElement) {
         fragment.appendChild(document.createTextNode(word));
       }
       
-      // Maintain proper layout spaces between words
       if (index < words.length - 1) {
         fragment.appendChild(document.createTextNode(' '));
       }
     });
 
-    // Swap the text node with our new mixed text/image node fragment safely
     parent.replaceChild(fragment, targetTextNode);
   });
 }
 
-loadBTTVEmotes();
+loadUnifiedEmotes();

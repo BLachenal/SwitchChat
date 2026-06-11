@@ -9,9 +9,10 @@
     "storage"
   ],
 
-  "host_permissions": [
+  "optional_host_permissions": [
     "https://api.betterttv.net/*",
-    "https://api.ivr.fi/*"
+    "https://api.ivr.fi/*",
+    "https://api.7tv.app/*"
   ],
 
   "background": {

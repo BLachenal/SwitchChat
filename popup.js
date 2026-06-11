@@ -1,31 +1,36 @@
-/* popup.js */
-document.addEventListener('DOMContentLoaded', () => {
-  const channelInput = document.getElementById('channelInput');
-  const saveBtn = document.getElementById('saveBtn');
+// popup.js
 
-  // Load any previously saved channel name override when popup opens
-  chrome.storage.local.get(['twitchChannel'], (result) => {
-    if (result.twitchChannel) {
-      channelInput.value = result.twitchChannel;
-    }
-  });
+const emoteToggle = document.getElementById('emote-toggle');
 
-  // Save or clear the channel name target
-  saveBtn.addEventListener('click', () => {
-    const channelName = channelInput.value.trim().toLowerCase();
-    
-    // If the user clears the input field, we remove the override entirely 
-    // so the extension falls back to auto-detecting the YouTube name.
-    if (!channelName) {
-      chrome.storage.local.remove('twitchChannel', () => {
-        alert("Manual override removed. Reverting to auto-detection! Refresh your stream page.");
-        window.close();
-      });
-    } else {
-      chrome.storage.local.set({ twitchChannel: channelName }, () => {
-        alert(`Target successfully locked to: #${channelName}. Refresh your stream page!`);
-        window.close();
-      });
-    }
-  });
+// 1. Initialize toggle state when menu opens (defaulting to true)
+chrome.storage.local.get(['emotesEnabled'], (result) => {
+  emoteToggle.checked = result.emotesEnabled !== false;
+});
+
+// 2. Handle configuration changes and runtime permissions
+emoteToggle.addEventListener('change', () => {
+  const shouldEnable = emoteToggle.checked;
+
+  if (shouldEnable) {
+    // Request API access dynamically at runtime to avoid the update trap
+    chrome.permissions.request({
+      origins: [
+        "https://api.betterttv.net/*",
+        "https://api.7tv.app/*",
+        "https://api.ivr.fi/*"
+      ]
+    }, (granted) => {
+      if (granted) {
+        chrome.storage.local.set({ emotesEnabled: true });
+        console.log("Permissions granted and emotes enabled.");
+      } else {
+        // If user rejects the permission dialog, force toggle back off
+        emoteToggle.checked = false;
+        chrome.storage.local.set({ emotesEnabled: false });
+      }
+    });
+  } else {
+    // Turn off feature safely
+    chrome.storage.local.set({ emotesEnabled: false });
+  }
 });
