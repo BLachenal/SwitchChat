@@ -6,7 +6,6 @@ const channelName = urlSegments[2]?.toLowerCase();
 console.log(`[SwitchChat Iframe Patch] Evaluating platform boundaries for: "${channelName}"`);
 
 let unifiedEmoteMap = {};
-// Inside iframe-patch.js
 
 async function loadUnifiedEmotes() {
   if (!channelName) return;
