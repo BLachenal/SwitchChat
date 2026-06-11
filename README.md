@@ -14,7 +14,24 @@ If a creator uses entirely different usernames across platforms (for example, Yo
 1. Click the **Change Channel** button located directly inside the custom Twitch Chat Bridge header on the webpage.
 2. Type the exact target Twitch username (e.g., `b0aty`) into the popup prompt.
 3. Click **OK**. The extension commits the name to local storage and dynamically updates the iframe layout instantly.
-    *Note* You only have to do this once. SwitchChat saves this to your local browser and checks there the next time you visit that same page 
+    *Note* You only have to do this once. SwitchChat saves this to your local browser and checks there the next time you visit that same page
+## BetterTTV & 7TV Emotes
+  SwitchChat has native, standalone support for thousands of animated and custom community emotes from both **BetterTTV (BTTV)** and **7TV** without requiring you to install any other extensions. 
+
+  Because SwitchChat is privacy-first, this feature is completely optional and opt-in. To turn it on, follow these simple steps:
+
+  ### How to Turn It On:
+  1. Click the **SwitchChat extension icon** (🔌) in your browser's toolbar to open the settings menu.
+  2. Toggle the switch next to **"Enable BTTV & 7TV Emotes"** to **On**.
+  3. A standard browser prompt will appear asking for permission to access the emote APIs (`api.betterttv.net`, `api.7tv.app`, and `api.ivr.fi`). Click **Allow / Grant**.
+  4. Refresh your active YouTube stream tab.
+
+> ℹ️ **Why does it ask for permissions?**  
+> To protect your privacy, SwitchChat doesn't request access to external websites by default when you install it. When you turn emotes on, the browser asks  for permission so our background script can safely fetch the custom emoji configurations directly from the official, open-source BetterTTV and 7TV databases. We never track, store, or collect your data.
+
+### Troubleshooting
+* **Emotes aren't showing up?** Make sure to refresh your YouTube tab after turning the toggle on so the overlay can build the emote database for that specific streamer.
+* **Want to turn them off?** Simply open the popup menu again, toggle the switch to **Off**, and refresh your page. The extension will completely stop making external network requests.
 ---
 
 ## 🚀 Core Features
