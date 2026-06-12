@@ -21,7 +21,7 @@ If a creator uses entirely different usernames across platforms (for example, Yo
   Because SwitchChat is privacy-first, this feature is completely optional and opt-in. To turn it on, follow these simple steps:
 
   ### How to Turn It On:
-  1. Click the **SwitchChat extension icon** (🔌) in your browser's toolbar to open the settings menu.
+  1. Click the **SwitchChat extension icon** in your browser's toolbar to open the settings menu.
   2. Toggle the switch next to **"Enable BTTV & 7TV Emotes"** to **On**.
   3. A standard browser prompt will appear asking for permission to access the emote APIs (`api.betterttv.net`, `api.7tv.app`, and `api.ivr.fi`). Click **Allow / Grant**.
   4. Refresh your active YouTube stream tab.
